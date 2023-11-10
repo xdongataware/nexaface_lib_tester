@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 #include "ConsoleApplication1.h"
+#include <memory>
+#include "NexaFaceWrapper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,6 +44,12 @@ int main()
         wprintf(L"Fatal Error: GetModuleHandle failed\n");
         nRetCode = 1;
     }
+
+    cout << "  calling nexaface version ..." << endl;
+
+    unique_ptr<NexaFaceWrapper> nexaface = make_unique<NexaFaceWrapper>();
+
+    nexaface->ShowVersion();
 
     cout << "all set" << endl;
     return nRetCode;
