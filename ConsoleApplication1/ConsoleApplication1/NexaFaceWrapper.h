@@ -3,17 +3,28 @@
 #include "aw_nexa_face_errors.h"
 #include "NexaFaceCommon.h"
 
+#include <string>
+#include <vector>
+#include <memory>
+
+using namespace std;
+
 class NexaFaceWrapper : public NexaFaceCommon
 {
+private:
+    NexaFaceWrapper() {};
+
 public:
-    NexaFaceWrapper();
+    NexaFaceWrapper(const char* cache_name, const char*  cache_dir, int max_encounters);
     ~NexaFaceWrapper();
 
-    virtual void ShowVersion();
-
-private:
+    void ShowVersion();
 
     void Initialize();
+    void ProcessAddSingleTemplate(const char* id, string template_data);
+
+private:
+    shared_ptr< std::vector<unsigned char> > Base64Decode(std::string const& encoded_string);
 
     inline std::string GetErrorString(int code)
     {
@@ -39,25 +50,61 @@ private:
     {
         if (error_code != AW_NEXA_FACE_E_NO_ERRORS)
         {
+            cout << "oops, got error: " << error_code << endl;
             const char* message_ptr;
             aw_nexa_face_get_error_details(error_code, &message_ptr);
             std::string message = GetString(message_ptr);
+
+            cout << "error message: " << message << endl;
             throw std::runtime_error(message);
         }
     }
 
+    bool CheckAndDisplayError(
+        std::string jobType,
+        std::string jobInfo,
+        int errorCode);
+
+    static void WINAPI OnCacheResultStatic(
+        const char* jobId,
+        int errorCode,
+        const char* encounterId,
+        const char* cacheName,
+        void* privateData);
+    void OnCacheResult(
+        std::string jobId,
+        int errorCode,
+        std::string encounterId,
+        std::string cacheName);
+
+    static void WINAPI OnCacheBatchResultStatic(
+        const char* jobId,
+        int errorCode,
+        const char** idList,
+        size_t idListSize,
+        const char* cacheName,
+        void* privateData);
+    void OnCacheBatchResult(
+        std::string jobId,
+        int errorCode,
+        const char** idList,
+        size_t idListSize,
+        std::string cacheName);
+
+    void CompleteOperation();
+
     aw_nexa_face_t* nexa_;                   // Library pointer
-    std::string cache_dir_;                  // Directory where cache created
-    const char* cache_name_;                 // Name of cache
-    aw_nexa_face_algorithm_t algorithm_;    // Algorithm to use
-    int max_encounters_;                     // Maximum encounters in cache, or 0 to use defaults
-//    bool identify_all_;                      // True if conducting a probe directory : gallery directory seach
     bool initialized_;                       // True if library successfully initialized
     bool add_new_operations_;                // A helper flag to not over-count operations
 //    ofstream results_file_stream_;           // Writes CSV results file for longer operations like identify_all
     volatile size_t queued_operations_;      // Number of currently queued operations; used to limit memory usage
     volatile size_t completed_operations_;   // Number of completed operations
     volatile size_t total_operations_;       // Total number of expected operations, based on task chosen
+
+    const char* cache_dir_;                  // Directory where cache created
+    const char* cache_name_;                 // Name of cache
+    int max_encounters_;                     // Maximum encounters in cache, or 0 to use defaults
+
 
 };
 

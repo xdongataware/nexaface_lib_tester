@@ -45,11 +45,13 @@ int main()
         nRetCode = 1;
     }
 
-    cout << "  calling nexaface version ..." << endl;
+    string templateXiao = "ChJORVhBX0ZBQ0U6MDAwMDAwMDIS8wMKBEY1MDAS6AMK5QMK4AMAAAAEAAAAAwAAAAAEAwACAQAAAMABAAABBgEB/v5DdtPmrfWqAz5MviDERgASD/ShfbBXxJW9m6N+0MpBZhti8P+VlnCHYi2EyfrBJM2BOunI+x3BusgjeNyni3IbV+bAAQzbse/LsR/HsR/HcQRHcGzBsh87MOzHAADbdhz7vgFAcCzAHhzHsQf7cGzHEQTBsQ/HMSz7AezHsS/HMezHvh0LAAxBsB9HsBzANgRLsOwHcGzbcRwBcOzBAizLfhwHACzHsixAABzBsez7PmzHvhzLcSzHMRzHEAzHsB/DMezHARzBEOzAsR/HFhzAHgzAEezbvg/AsW3HsW3Lsh3AcWz7ESzHcBzHEQTbdhzbBhzHMAzbfgDHcAzHvgDAsW3LFgD7sBzDdgTHsixbcBzDERzHsR/7sh3BAuzAMuzbdgTAAQDHsm37fhzBsRwAcBzAsW/LEizHEAzHPhzBsAxHcOzDsRzBcADHcRzHcRzBAgQ7EATHvmxHMAxAsAHHfhz7cRzDERzHcSzLsR9DAAD7ASzHvgHbsA3DcQAHcGzHsQMLACxHcOzbBizHcmzbcWzbMgzBAhzBsh/LdgADMABHcGzBNizHsW3HMRzHsAPDtgzBsR3bASz7cQzBFgzBsQAQABgA";
 
-    unique_ptr<NexaFaceWrapper> nexaface = make_unique<NexaFaceWrapper>();
-
+    unique_ptr<NexaFaceWrapper> nexaface = make_unique<NexaFaceWrapper>("version3cache", "D:/nexaface/data/version3cache", 10000);
     nexaface->ShowVersion();
+    nexaface->Initialize();
+    nexaface->ProcessAddSingleTemplate("xiao", templateXiao);
+
 
     cout << "all set" << endl;
     return nRetCode;
