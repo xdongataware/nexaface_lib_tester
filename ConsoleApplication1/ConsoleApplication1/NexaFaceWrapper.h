@@ -7,6 +7,9 @@
 #include <vector>
 #include <memory>
 
+#include <chrono>
+#include <thread>
+
 using namespace std;
 
 class NexaFaceWrapper : public NexaFaceCommon
@@ -15,16 +18,20 @@ private:
     NexaFaceWrapper() {};
 
 public:
-    NexaFaceWrapper(const char* cache_name, const char*  cache_dir, int max_encounters);
+    NexaFaceWrapper(const char* cache_name, const char*  cache_dir, int max_encounters, int results_size);
     ~NexaFaceWrapper();
 
     void ShowVersion();
 
     void Initialize();
     void ProcessAddSingleTemplate(const char* id, string template_data);
+    void ProcessIdentify(string base64EncodedTemplateString);
+    void ProcessDelete(string encounter_id_);
+    void ProcessDrop();
 
 private:
     shared_ptr< std::vector<unsigned char> > Base64Decode(std::string const& encoded_string);
+    void WaitUntilDone();
 
     inline std::string GetErrorString(int code)
     {
@@ -91,10 +98,29 @@ private:
         size_t idListSize,
         std::string cacheName);
 
+    static void WINAPI OnCompareResultStatic(
+        const char* jobId,
+        int errorCode,
+        aw_nexa_face_compare_result_t* result,
+        void* privateData);
+    void OnCompareResult(
+        std::string jobId,
+        int errorCode,
+        aw_nexa_face_compare_result_t* result);
+
+    static void WINAPI OnIdentifyResultStatic(
+        const char* jobId,
+        int errorCode,
+        aw_nexa_face_candidate_list_t* candidateList,
+        void* privateData);
+    void OnIdentifyResult(
+        std::string jobId,
+        int errorCode,
+        aw_nexa_face_candidate_list_t* candidateList);
+
     void CompleteOperation();
 
     aw_nexa_face_t* nexa_;                   // Library pointer
-    bool initialized_;                       // True if library successfully initialized
     bool add_new_operations_;                // A helper flag to not over-count operations
 //    ofstream results_file_stream_;           // Writes CSV results file for longer operations like identify_all
     volatile size_t queued_operations_;      // Number of currently queued operations; used to limit memory usage
@@ -105,6 +131,6 @@ private:
     const char* cache_name_;                 // Name of cache
     int max_encounters_;                     // Maximum encounters in cache, or 0 to use defaults
 
-
+    int results_size_;
 };
 
